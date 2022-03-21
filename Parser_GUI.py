@@ -55,19 +55,23 @@ def NewEntry(parent, key, labelText, entryText, buttonText, method, row, col, pa
 
 	return widgets[key]
 
-def StepOne():
+def StepThree(filepath):
+	filename = filepath.split("/")[-1]
+	widgets["Locations"]["label"]["text"] = f"2.) {filename}"
+	widgets["Locations"]["button"]["text"] = "Change"
+
 	CSV_Widget = NewButton(
 		parent=root,
 		key="CSV",
-		labelText="1.) CSV File",
+		labelText="3.) CSV File",
 		buttonText="Load",
-		method=lambda:LoadFile("Open a CSV File", "/Downloads", (('CSV files', '*.csv'),), StepTwo, key="Schedule"),
-		pad_x=0.09, pad_y=0.05,
-		row=0, col=0)
+		method=lambda:LoadFile("Open a CSV File", os.getcwd(), (('CSV files', '*.csv'),), StepFour, key="Schedule"),
+		pad_x=0.05, pad_y=0.05,
+		row=3, col=0)
 
-def StepTwo(filepath):
+def StepFour(filepath):
 	filename = filepath.split("/")[-1]
-	widgets["CSV"]["label"]["text"] = f"1.) {filename}"
+	widgets["CSV"]["label"]["text"] = f"3.) {filename}"
 	widgets["CSV"]["button"]["text"] = "Change"
 
 	location = filename.split(".")[0]
@@ -80,47 +84,43 @@ def StepTwo(filepath):
 		location_widget = NewEntry(
 			parent=root,
 			key="Location",
-			labelText=f"2.) Location:",
+			labelText=f"4.) Location:",
 			entryText=location,
 			buttonText="Confirm",
-			method=StepThree,
+			method=StepTwo,
 			pad_x=0.05, pad_y=0.05,
-			row=1, col=0)
+			row=4, col=0)
 	widgets["Location"]["entry"].focus()
 
-def StepThree():
-	widgets["Location"]["button"]["text"] = "Update"
+def StepOne():
+	# widgets["Location"]["button"]["text"] = "Update"
 	if not "Courses" in widgets.keys():
 		courses_widget = NewButton(
 			parent=root,
 			key="Courses",
-			labelText=f"3.) Courses",
+			labelText=f"1.) Courses",
 			buttonText="Load",
-			method=lambda:LoadFile("Open a JSON File", "/Downloads", (('JSON files', '*.json'),), StepFour, key="Courses"),
+			method=lambda:LoadFile("Open a JSON File", os.getcwd(), (('JSON files', '*.json'),), StepTwo, key="Courses"),
 			pad_x=0.05, pad_y=0.05,
-			row=2, col=0)
+			row=1, col=0)
 	widgets["Courses"]["label"].focus()
 
-def StepFour(filepath):
+def StepTwo(filepath):
 	filename = filepath.split("/")[-1]
-	widgets["Courses"]["label"]["text"] = f"3.) {filename}"
+	widgets["Courses"]["label"]["text"] = f"1.) {filename}"
 	widgets["Courses"]["button"]["text"] = "Change"
 
 	if not "Locations" in widgets.keys():
 		locations_widget = NewButton(
 			parent=root,
 			key="Locations",
-			labelText=f"4.) Locations",
+			labelText=f"2.) Locations",
 			buttonText="Load",
-			method=lambda:LoadFile("Open a JSON File", "/Downloads", (('JSON files', '*.json'),), StepFive, key="Locations"),
+			method=lambda:LoadFile("Open a JSON File", os.getcwd(), (('JSON files', '*.json'),), StepThree, key="Locations"),
 			pad_x=0.05, pad_y=0.05,
-			row=3, col=0)
+			row=2, col=0)
 
 def StepFive(filepath):
-	filename = filepath.split("/")[-1]
-	widgets["Locations"]["label"]["text"] = f"4.) {filename}"
-	widgets["Locations"]["button"]["text"] = "Change"
-
 	if not "Weeks Row" in widgets.keys():
 		weeks_row = NewEntry(
 			parent=root,
@@ -131,7 +131,7 @@ def StepFive(filepath):
 			buttonText="Confirm",
 			method=StepSix,
 			pad_x=0.05, pad_y=0.05,
-			row=4, col=0)
+			row=5, col=0)
 		# courses_row_first_l, courses_row_first = NewEntry(root, "Row Containing First Course", 2, 1)
 		# courses_row_last_l, courses_row_last = NewEntry(root, "Row Containing Last Course", 3, 1)
 		# names_col_l, names_col = NewEntry(root, "Column Containing Course Names", 4, 1)
@@ -182,6 +182,7 @@ root = InitializeRoot(
 	x_pos=.70,
 	y_pos=.25,
 	columns=3)
+root.update_idletasks()
 
 widgets = {}
 
