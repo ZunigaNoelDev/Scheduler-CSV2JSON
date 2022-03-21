@@ -1,0 +1,21 @@
+[{
+  "_id": {
+    "$oid": "afa7857ca8b011ecb9090242ac120002"
+  },
+  "name": "Los Angeles",
+},{
+  "_id": {
+    "$oid": "afa78946a8b011ecb9090242ac120002"
+  },
+  "name": "San Diego",
+},{
+  "_id": {
+    "$oid": "afa78af4a8b011ecb9090242ac120002"
+  },
+  "name": "Sacramento",
+},{
+  "_id": {
+    "$oid": "afa78c66a8b011ecb9090242ac120002"
+  },
+  "name": "San Francisco",
+}]
