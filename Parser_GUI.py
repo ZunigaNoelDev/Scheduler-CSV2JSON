@@ -55,58 +55,48 @@ def NewEntry(parent, key, labelText, entryText, buttonText, method, row, col, pa
 
 	return widgets[key]
 
-def StepThree(filepath):
-	filename = filepath.split("/")[-1]
-	widgets["Locations"]["label"]["text"] = f"2.) {filename}"
-	widgets["Locations"]["button"]["text"] = "Change"
+def NewOptionMenu(parent, key, labelText, optionList, curr_selection, buttonText, method, row, col, pad_x, pad_y, width, row_offset=0, col_offset=1):
+	widgets[key] = {"var": StringVar(parent, value=curr_selection), "label": Label(parent, text=labelText), "button": Button(parent, text=buttonText, command=method)}
+	widgets[key]["options"] = OptionMenu(parent, widgets[key]["var"], *optionList)
 
-	CSV_Widget = NewButton(
-		parent=root,
-		key="CSV",
-		labelText="3.) CSV File",
-		buttonText="Load",
-		method=lambda:LoadFile("Open a CSV File", os.getcwd(), (('CSV files', '*.csv'),), StepFour, key="Schedule"),
-		pad_x=0.05, pad_y=0.05,
-		row=3, col=0)
+	widgets[key]["label"].grid(row=row, column=col, 
+		sticky="w", columnspan=1,
+		padx=(parent.winfo_width()*pad_x,0),
+		pady=(parent.winfo_width()*pad_y,0))
 
-def StepFour(filepath):
-	filename = filepath.split("/")[-1]
-	widgets["CSV"]["label"]["text"] = f"3.) {filename}"
-	widgets["CSV"]["button"]["text"] = "Change"
+	widgets[key]["options"].config(width=width)
+	widgets[key]["options"].grid(row=row+row_offset, column=col+col_offset, 
+		sticky="w", columnspan=1,
+		padx=(0,0),
+		pady=(parent.winfo_width()*pad_y,0))
+	
+	widgets[key]["button"].grid(row=row+row_offset, column=col+col_offset+1, 
+		sticky="e", columnspan=1,
+		padx=(0,parent.winfo_width()*pad_x),
+		pady=(parent.winfo_width()*pad_y,0))
 
-	location = filename.split(".")[0]
-
-	if "Location" in widgets.keys():
-		current = widgets["Location"]["entry"].get()
-		widgets["Location"]["entry"].delete(0, len(current))
-		widgets["Location"]["entry"].insert(0, location)
-	else:
-		location_widget = NewEntry(
-			parent=root,
-			key="Location",
-			labelText=f"4.) Location:",
-			entryText=location,
-			buttonText="Confirm",
-			method=StepTwo,
-			pad_x=0.05, pad_y=0.05,
-			row=4, col=0)
-	widgets["Location"]["entry"].focus()
+	return widgets[key]
 
 def StepOne():
 	# widgets["Location"]["button"]["text"] = "Update"
+	path = os.getcwd() + "\\Files"
 	if not "Courses" in widgets.keys():
 		courses_widget = NewButton(
 			parent=root,
 			key="Courses",
 			labelText=f"1.) Courses",
 			buttonText="Load",
-			method=lambda:LoadFile("Open a JSON File", os.getcwd(), (('JSON files', '*.json'),), StepTwo, key="Courses"),
+			method=lambda:LoadFile("Open a JSON File", path, (('JSON files', '*.json'),), StepTwo, key="Courses"),
 			pad_x=0.05, pad_y=0.05,
 			row=1, col=0)
 	widgets["Courses"]["label"].focus()
+	if os.path.exists(path+"\\courses.json"):
+		StepTwo(path+"\\courses.json")
+
 
 def StepTwo(filepath):
-	filename = filepath.split("/")[-1]
+	path = os.getcwd() + "\\Files"
+	filename = filepath.split("\\")[-1]
 	widgets["Courses"]["label"]["text"] = f"1.) {filename}"
 	widgets["Courses"]["button"]["text"] = "Change"
 
@@ -116,11 +106,68 @@ def StepTwo(filepath):
 			key="Locations",
 			labelText=f"2.) Locations",
 			buttonText="Load",
-			method=lambda:LoadFile("Open a JSON File", os.getcwd(), (('JSON files', '*.json'),), StepThree, key="Locations"),
+			method=lambda:LoadFile("Open a JSON File", os.getcwd() + "/Files/", (('JSON files', '*.json'),), StepThree, key="Locations"),
 			pad_x=0.05, pad_y=0.05,
 			row=2, col=0)
+	if os.path.exists(path+"\\locations.json"):
+		StepThree(path+"\\locations.json")
 
-def StepFive(filepath):
+
+def StepThree(filepath):
+	path = os.getcwd() + "\\Files"
+	filename = filepath.split("\\")[-1]
+	widgets["Locations"]["label"]["text"] = f"2.) {filename}"
+	widgets["Locations"]["button"]["text"] = "Change"
+	locations = GetJKeys(filepath)
+
+	CSV_Widget = NewButton(
+		parent=root,
+		key="CSV",
+		labelText="3.) CSV File",
+		buttonText="Load",
+		method=lambda:LoadFile("Open a CSV File", os.getcwd() + "/Files/", (('CSV files', '*.csv'),), StepFour, key="Schedule"),
+		pad_x=0.05, pad_y=0.05,
+		row=3, col=0)
+	loc = None
+	for location in locations:
+		if os.path.exists(path+f"\\{location}.csv"):
+			loc = location
+			files["Schedule"] = path+f"\\{location}.csv"
+			StepFour(path+f"\\{location}.csv", locations)
+			break
+	if not loc and os.path.exists(path+f"\\schedule.csv"):
+		files["Schedule"] = path+"\\schedule.csv"
+		StepFour(path+f"\\schedule.csv", locations)
+
+
+def StepFour(filepath, locations):
+	filename = filepath.split("\\")[-1]
+	widgets["CSV"]["label"]["text"] = f"3.) {filename}"
+	widgets["CSV"]["button"]["text"] = "Change"
+
+	location = filename.split(".")[0]
+	print(locations)
+	if location not in locations:
+		location="San Diego"
+	if "Location" in widgets.keys():
+		current = widgets["Location"]["entry"].get()
+		widgets["Location"]["entry"].delete(0, len(current))
+		widgets["Location"]["entry"].insert(0, location)
+	else:
+		location_widget = NewOptionMenu(
+			parent=root,
+			key="Location",
+			labelText=f"4.) Location:",
+			optionList=locations,
+			curr_selection=location,
+			buttonText="Confirm",
+			method=StepFive,
+			pad_x=0.05, pad_y=0.05,
+			row=4, col=0, width=12)
+	widgets["Location"]["options"].focus()
+
+
+def StepFive():
 	if not "Weeks Row" in widgets.keys():
 		weeks_row = NewEntry(
 			parent=root,
@@ -139,6 +186,7 @@ def StepFive(filepath):
 		# dates_last_l, dates_lase = NewEntry(root, "Column Containing Last Date", 6, 1)
 		# price__5D_col_l, price__5D_col = NewEntry(root, "Column Containing 5 Day Price", 7, 1)
 		# price__4D_col_l, price__4D_col = NewEntry(root, "Column Containing 4 Day Price", 8, 1)
+
 
 def StepSix():
 	for key in widgets:
@@ -161,6 +209,11 @@ def GetWeeksRow(filepath):
 				dates_row = index
 	return dates_row
 
+
+def GetJKeys(filepath):
+	with open(filepath) as jsonFile:
+		data = json.load(jsonFile)
+		return [entry["name"] for entry in data]
 
 def LoadFile(title, dir, filetypes, nextstep, key=None):
 	filepath = fd.askopenfilename(
