@@ -10,8 +10,8 @@ This script accepts the CSV version of the Google Sheet and parses it to post ea
 ## Application Specific Requirements
 Because this script was made for a very specific purpose it asks for a few pieces of information right off the bat.
 
-* The script requires the uID for each class offered as well as the uID of the location it will be offered in; these IDs are pulled from our database, but dummy files are included here for testing.
-* The script also requires the uID of the person posting and the api endpoint that will be handling the requests; these have been omitted from the script for security reasons.
+* The script requires the oID for each class offered as well as the oID of the location it will be offered in; these IDs are pulled from our database, but dummy files are included here for testing.
+* The script also requires the ID of the person posting and the api endpoint that will be handling the requests; these have been omitted from the script for security reasons.
 * After the initial setup, a CSV schedule is loaded into the script and it will ask for the rows and columns of specific information if it cannot be automatically parsed.
 
 Once the file has been read, the script will either output a single payload including all courses or a series of individual entries to be posted separately.
