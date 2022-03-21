@@ -16,6 +16,11 @@ Because this script was made for a very specific purpose it asks for a few piece
 
 Once the file has been read, the script will either output a single payload including all courses or a series of individual entries to be posted separately.
 
+## Screenshots
+
+![Alt text](/Files/Screenshots/example_schedule.png "Example schedule")
+![Alt text](/Files/Screenshots/gui.png "GUI")
+
 ## TODO 
 * Remove dependency on Requests
 * Add login feature to remove manual entry of user uID
