@@ -34,8 +34,8 @@ def NewButton(parent, key, labelText, buttonText, method, row, col, pad_x, pad_y
 
 	return widgets[key]
 
-def NewEntry(parent, key, labelText, entryText, buttonText, method, row, col, pad_x, pad_y, entryWidth=12, row_offset=0, col_offset=1):
-	widgets[key] = {"label": Label(parent, text=labelText), "entry": Entry(parent, width=entryWidth), "button": Button(parent, text=buttonText, command=method)}
+def NewEntry(parent, key, labelText, entryText, buttonText, method, row, col, pad_x, pad_y, entryWidth=12, row_offset=0, col_offset=1, hasButton=True):
+	widgets[key] = {"label": Label(parent, text=labelText), "entry": Entry(parent, width=entryWidth)}
 
 	widgets[key]["label"].grid(row=row, column=col, 
 		sticky="w", columnspan=1,
@@ -47,11 +47,13 @@ def NewEntry(parent, key, labelText, entryText, buttonText, method, row, col, pa
 		sticky="w", columnspan=1,
 		padx=(0,0),
 		pady=(parent.winfo_width()*pad_y,0))
-	
-	widgets[key]["button"].grid(row=row+row_offset, column=col+col_offset+1, 
-		sticky="e", columnspan=1,
-		padx=(0,parent.winfo_width()*pad_x),
-		pady=(parent.winfo_width()*pad_y,0))
+
+	if hasButton:
+		widgets[key]["button"] = Button(parent, text=buttonText, command=method)
+		widgets[key]["button"].grid(row=row+row_offset, column=col+col_offset+1, 
+			sticky="e", columnspan=1,
+			padx=(0,parent.winfo_width()*pad_x),
+			pady=(parent.winfo_width()*pad_y,0))
 
 	return widgets[key]
 
@@ -146,7 +148,6 @@ def StepFour(filepath, locations):
 	widgets["CSV"]["button"]["text"] = "Change"
 
 	location = filename.split(".")[0]
-	print(locations)
 	if location not in locations:
 		location="San Diego"
 	if "Location" in widgets.keys():
@@ -168,6 +169,7 @@ def StepFour(filepath, locations):
 
 
 def StepFive():
+	widgets["Location"]["button"]["text"] = "Change"
 	if not "Weeks Row" in widgets.keys():
 		weeks_row = NewEntry(
 			parent=root,
@@ -179,8 +181,7 @@ def StepFive():
 			method=StepSix,
 			pad_x=0.05, pad_y=0.05,
 			row=5, col=0)
-		# courses_row_first_l, courses_row_first = NewEntry(root, "Row Containing First Course", 2, 1)
-		# courses_row_last_l, courses_row_last = NewEntry(root, "Row Containing Last Course", 3, 1)
+		
 		# names_col_l, names_col = NewEntry(root, "Column Containing Course Names", 4, 1)
 		# dates_first_l, dates_first = NewEntry(root, "Column Containing First Date", 5, 1)
 		# dates_last_l, dates_lase = NewEntry(root, "Column Containing Last Date", 6, 1)
@@ -189,10 +190,32 @@ def StepFive():
 
 
 def StepSix():
-	for key in widgets:
-		print(widgets[key])
-	for file in files:
-		print(files[file])
+	widgets["Weeks Row"]["button"]["text"] = "Change"
+	if not "Start Row" in widgets.keys():
+		schedule_row_start = NewEntry(
+			parent=root,
+			key="Start Row",
+			labelText="6.) First Schedule Row",
+			entryText=[val if (val:=GetScheduleRows(files["Schedule"], "open")[0]+1) > 0 else -1][0],
+			entryWidth=len(str(val)) if val > 0 else 2,
+			buttonText="Confirm",
+			method=StepSeven,
+			hasButton=False,
+			pad_x=0.05, pad_y=0.05,
+			row=6, col=0)
+		schedule_row_end = NewEntry(
+			parent=root,
+			key="End Row",
+			labelText="      Last Schedule Row",
+			entryText=[val if (val:=GetScheduleRows(files["Schedule"], "open")[1]+1) > 0 else -1][0],
+			entryWidth=len(str(val)) if val > 0 else 2,
+			buttonText="Confirm",
+			method=StepSeven,
+			pad_x=0.05, pad_y=0.00,
+			row=7, col=0)
+
+
+def StepSeven():
 	pass
 
 
@@ -209,6 +232,25 @@ def GetWeeksRow(filepath):
 				dates_row = index
 	return dates_row
 
+
+def GetScheduleRows(filepath, keyword):
+	with open(filepath, "r") as read_obj:
+		reader = csv.reader(read_obj)
+		start_row = -1
+		end_row = -1
+		keyword_count = 0
+		first = True
+		for index,row in enumerate(reader):
+			text = ''.join(row)
+			count = text.count(keyword)
+			if count > 0 and first:
+				start_row = index
+				first = False
+			elif count >= keyword_count:
+				keyword_count = keyword_count
+				end_row = index
+
+	return start_row, end_row
 
 def GetJKeys(filepath):
 	with open(filepath) as jsonFile:
@@ -238,19 +280,5 @@ root = InitializeRoot(
 root.update_idletasks()
 
 widgets = {}
-
-# Load CSV Widget
 StepOne()
-
-# Text boxes for inputting relevant cells
-# weeks_row_l, weeks_row = NewTextInput(root, "Row Containing Week Dates", 1, 1)
-# courses_row_first_l, courses_row_first = NewTextInput(root, "Row Containing First Course", 2, 1)
-# courses_row_last_l, courses_row_last = NewTextInput(root, "Row Containing Last Course", 3, 1)
-# names_col_l, names_col = NewTextInput(root, "Column Containing Course Names", 4, 1)
-# dates_first_l, dates_first = NewTextInput(root, "Column Containing First Date", 5, 1)
-# dates_last_l, dates_lase = NewTextInput(root, "Column Containing Last Date", 6, 1)
-# price__5D_col_l, price__5D_col = NewTextInput(root, "Column Containing 5 Day Price", 7, 1)
-# price__4D_col_l, price__4D_col = NewTextInput(root, "Column Containing 4 Day Price", 8, 1)
-
-# root.after(3000,lambda:root.destroy())
 root.mainloop()
